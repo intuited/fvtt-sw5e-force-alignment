@@ -68,20 +68,6 @@ class ForceAlignmentDialog extends DocumentSheet {
 }
 
 /**
-    const a = event.currentTarget;
-    const label = a.parentElement.querySelector("label");
-    const choices = CONFIG.SW5E[a.dataset.options];
-    const options = {name: a.dataset.target, title: `${label.innerText}: ${this.actor.name}`, choices};
-    if ( ["di", "dr", "dv"].some(t => a.dataset.target.endsWith(`.${t}`)) ) {
-        options.bypasses = CONFIG.SW5E.physicalWeaponProperties;
-        return new DamageTraitSelector(this.actor, options).render(true);
-    } else {
-        return new TraitSelector(this.actor, options).render(true);
-    }
-}
-/**/
-
-/**
  * Add another item to the list of traits in the sw5e character sheet.
  * Its title is Force Alignment and its edit button opens a dialog
  * for displaying and editing force alignment data.
