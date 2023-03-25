@@ -1,0 +1,42 @@
+{
+  "name": "sw5e-force-alignment",
+  "title": "sw5e Force Alignment",
+  "description":  "Force Alignment tracking for the sw5e system",
+	"compatibility": {
+		"minimum": "10",
+		"verified": "10"
+	},
+  "relationships": {
+    "systems": [
+      {
+        "id": "sw5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "2.0.2.2.2.6"
+        }
+      }
+    ]
+  },
+  "version": "0.0.1",
+  "author": "Ted Tibbetts",
+  "authors": [
+    {
+      "name": "Ted Tibbetts",
+      "discord": "circulated.@6126",
+      "url": "https://github.com/intuited"
+    }
+  ],
+  "esmodules": [
+    "module/sw5e-force-alignment.js"
+  ],
+  "styles": [
+    "styles/sw5e-force-alignment.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}
