@@ -1,0 +1,16 @@
+<div>
+    <label>{{localize "SW5EFA.ForceAlign"}}</label>
+    <a
+        class="trait-selector"
+        data-options="forceAlignment"
+        data-target="system.traits.fa"
+        title="{{localize 'SW5E.TraitConfig' trait=(localize 'SW5EFA.ForceAlign')}}"
+    >
+        <i class="fas fa-edit"></i>
+    </a>
+    <ul class="traits-list">
+        {{#each system.traits.fa.features as |v k|}}
+        <li>{{v}}</li>
+        {{/each}}
+    </ul>
+</div>
