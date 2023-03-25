@@ -16,11 +16,6 @@ function logForce(...args) {
     console.log(MODULE_ID, '|', ...args);
 }
 
-function traitExists(html) {
-    // TODO: expand this stub
-    return false;
-}
-
 /**
  * Event handler for clicks on the Force Alignment edit button.
  * `this` is bound to the actor character sheet
@@ -62,9 +57,33 @@ class ForceAlignmentDialog extends DocumentSheet {
 
     /** @override */
     getData() {
-        return {};
+        log('ForceAlignmentDialog.getData(), this', this);
+        return {
+            balance: this.object.getFlag(MODULE_ID, 'balance'),
+            acknowledgedBalance: this.object.getFlag(MODULE_ID, 'acknowledged-balance'),
+            benevolences: this.object.getFlag(MODULE_ID, 'benevolences'),
+            corruptions: this.object.getFlag(MODULE_ID, 'corruptions')
+        };
     }
 
+}
+
+function initFlags(actor) {
+    log('initFlags(actor)', actor);
+    let balance = actor.getFlag(MODULE_ID, 'balance');
+    if (balance === undefined) {
+        log('initFlags: initializing flags');
+        actor.setFlag(MODULE_ID, 'balance', 0);
+        actor.setFlag(MODULE_ID, 'acknowledgedBalance', 0);
+        actor.setFlag(MODULE_ID, 'benevolences', []);
+        actor.setFlag(MODULE_ID, 'corruptions', []);
+    } else {
+        log('initFlags: `balance` flag was not undefined:', balance);
+    }
+}
+
+function traitExists(html) {
+    return html.find('.resources .traits div .force-alignment').length > 0;
 }
 
 /**
@@ -84,9 +103,9 @@ async function addFATrait(app, html, data) {
 }
 
 Hooks.on("renderActorSheet5eCharacter", async (app, html, data) => {
-    log('renderActorSheet5eCharacter hook', app, html, data);
+    log('renderActorSheet5eCharacter hook: app, html, data', app, html, data);
+    initFlags(app.object);
     if (!traitExists(html)) {
         await addFATrait(app, html, data);
-
     }
 });
