@@ -29,14 +29,14 @@ function traitExists(html) {
 function _onFATraitEdit(event) {
     event.preventDefault();
     log('_onFATraitEdit(event), this', event, this);
-    return new ForceAlignment(this.object).render(true);
+    return new ForceAlignmentDialog(this.object).render(true);
 }
 
 /**
  * Class for the dialog that presents force alignment data for the actor.
  * Code based on systems/sw5e/module/applications/trait-selector.mjs
  */
-class ForceAlignment extends DocumentSheet {
+class ForceAlignmentDialog extends DocumentSheet {
     /** @inheritdoc */
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
