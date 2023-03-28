@@ -20,13 +20,26 @@ function logForce(...args) {
 }
 
 // Map containing FAFlags objects for each actor
-var actorFA = new Map();
+var actorFAFlagsMap = new Map();
+/**
+ * Fetches the actor's FAFlags object from the Map,
+ * initializing one if it does not already exist.
+ */
+function actorFlags(actor) {
+    if (!actorFAFlagsMap.has(actor)) {
+        log('actorFlags: creating entry for actor in actorFAFlagsMap');
+        actorFAFlagsMap.set(actor, new FAFlags(actor));
+    }
+    return actorFAFlagsMap.get(actor);
+}
 // make the actor FA array globally accessible for debugging
 Hooks.once('ready', async (app, html, data) => {
     if (devModeActive()) {
-        game.sw5eFA = actorFA;
+        game.sw5eFA = actorFAFlagsMap;
     }
 });
+
+
 
 /**
  * Event handler for clicks on the Force Alignment edit button.
@@ -70,12 +83,7 @@ class ForceAlignmentDialog extends DocumentSheet {
     /** @override */
     getData() {
         log('ForceAlignmentDialog.getData(), this', this);
-        return {
-            balance: this.object.getFlag(MODULE_ID, 'balance'),
-            acknowledgedBalance: this.object.getFlag(MODULE_ID, 'acknowledged-balance'),
-            benevolences: this.object.getFlag(MODULE_ID, 'benevolences'),
-            corruptions: this.object.getFlag(MODULE_ID, 'corruptions')
-        };
+        return actorFlags(this.object);
     }
 
 }
@@ -101,10 +109,11 @@ class FAFlags {
         let fields = {
             balance: 0,
             acknowledgedBalance: 0,
+            previouslyCast: [],
             benevolences: [],
             corruptions: [],
-            transactions: []
-        }
+            transactions: [],
+        };
         Object.entries(fields).forEach(([field, def]) => {
             if (this.actor.getFlag(MODULE_ID, field) === undefined) {
                 this.actor.setFlag(MODULE_ID, field, def);
@@ -118,6 +127,9 @@ class FAFlags {
     }
     get acknowledgedBalance() {
         return this.actor.getFlag(MODULE_ID, 'acknowledgedBalance');
+    }
+    get previouslyCast() {
+        return this.actor.getFlag(MODULE_ID, 'previouslyCast');
     }
     get benevolences() {
         return this.actor.getFlag(MODULE_ID, 'benevolences');
@@ -195,13 +207,30 @@ class FAFlags {
         }
         return ret;
     }
-}
 
-function initFlags(actor) {
-    log('initFlags(actor)', actor);
-    if (!actorFA.has(actor)) {
-        log('initFlags: creating entry for actor in actorFA');
-        actorFA.set(actor, new FAFlags(actor));
+    onCastPower(power) {
+        log('onCastPower(power): this, power', this, power);
+        let opMap = {
+            lgt: this.incBalance.bind(this),
+            drk: this.decBalance.bind(this),
+        };
+        if (power.system.level > 0
+            && ['drk', 'lgt'].includes(power.system.school)
+        ) {
+            if (this.previouslyCast.includes(power.name)) {
+                opMap[power.system.school](`Cast ${power.name} again`);
+            } else {
+                opMap[power.system.school](
+                    `Cast ${power.name} for the first time`,
+                    power.system.level
+                );
+                this.actor.setFlag(
+                    MODULE_ID,
+                    'previouslyCast',
+                    [...this.previouslyCast, power.name]
+                );
+            }
+        }
     }
 }
 
@@ -227,8 +256,13 @@ async function addFATrait(app, html, data) {
 
 Hooks.on("renderActorSheet5eCharacter", async (app, html, data) => {
     log('renderActorSheet5eCharacter hook: app, html, data', app, html, data);
-    initFlags(app.object);
     if (!traitExists(html)) {
         await addFATrait(app, html, data);
+    }
+});
+Hooks.on("sw5e.useItem", async (item, html, data) => {
+    log('useItem hook: item, html, data', item, html, data);
+    if (item.type === 'power' && item.parent?.type === 'character') {
+        actorFlags(item.parent).onCastPower(item);
     }
 });
