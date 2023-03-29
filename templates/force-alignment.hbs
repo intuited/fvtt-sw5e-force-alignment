@@ -8,10 +8,10 @@
     {{#ifGM}}
         <div id="sw5efa-gm-only">
             <div><p>Current Force Alignment balance: {{balance}}</p></div>
-            <div><button id="sw5efa-light">Light</button></div>
-            <label>change amount: </label><input type="number" id="sw5efa-delta" max=200><br>
-            <label>reason:        </label><input type="text" id="sw5efa-reason"><br>
-            <div><button id="sw5efa-dark">Dark</button></div>
+            <div><button id="sw5efa-light" class="sw5efa-ldbutton">Light</button></div>
+            <label>change amount: </label><input type="number" id="sw5efa-delta" max=200 value=1><br>
+            <label>reason:        </label><input type="text" id="sw5efa-reason" value="GM adjustment"><br>
+            <div><button id="sw5efa-dark" class="sw5efa-ldbutton">Dark</button></div>
             <br>
             <table id="sw5efa-transaction-log">
                 <tr><th>TIMESTAMP</th><th>DELTA</th><th>REASON</th></tr>

@@ -39,7 +39,11 @@ Hooks.once('ready', async (app, html, data) => {
     }
 });
 
-
+function partial(fn, ...completedArgs) {
+    return function(...args) {
+        return fn.apply(this, completedArgs.concat(args));
+    }
+}
 
 /**
  * Event handler for clicks on the Force Alignment edit button.
@@ -73,6 +77,26 @@ class ForceAlignmentDialog extends DocumentSheet {
             valueKey: "value",
             customKey: "custom"
         });
+    }
+
+    onClickButton(side, event) {
+        log('onClickButton: this, side, event:', this, side, event)
+        let delta = this.element.find('#sw5efa-delta')[0].value;
+        let reason = this.element.find('#sw5efa-reason')[0].value;
+        log('  delta, reason:', delta, reason);
+        let af = actorFlags(this.object);
+        let callMap = {
+            light: af.incBalance.bind(af),
+            dark:  af.decBalance.bind(af)
+        };
+        callMap[side](reason, delta);
+    }
+
+    activateListeners(html) {
+        log('ForceAlignmentDialog.activateListeners(html): this, html:', this, html);
+        super.activateListeners(html);
+        html.find("#sw5efa-light").click(partial(this.onClickButton, 'light').bind(this));
+        html.find("#sw5efa-dark" ).click(partial(this.onClickButton, 'dark' ).bind(this));
     }
 
     /** @inheritdoc */
@@ -143,12 +167,12 @@ class FAFlags {
 
     incBalance(reason = "increment", amount = 1) {
         // TODO: is there a way to guard these methods with a semaphore or something?
-        let newBalance = this.balance + amount;
+        let newBalance = Number(this.balance) + Number(amount);
         this.logTransaction(amount, reason);
         this.actor.setFlag(MODULE_ID, 'balance', newBalance);
     }
     decBalance(reason = "decrement", amount = 1) {
-        let newBalance = this.balance - amount;
+        let newBalance = Number(this.balance) - Number(amount);
         this.logTransaction(-amount, reason);
         this.actor.setFlag(MODULE_ID, 'balance', newBalance);
     }
