@@ -64,7 +64,7 @@ class ForceAlignmentDialog extends DocumentSheet {
             classes: ["sw5e", "force-alignment", "subconfig"],
             title: "Force Alignment",
             template: `modules/${MODULE_ID}/templates/force-alignment.hbs`,
-            width: 320,
+            width: 640,
             height: "auto",
             allowCustom: true,
             minimum: 0,
@@ -136,6 +136,9 @@ class FAFlags {
     }
     get corruptions() {
         return this.actor.getFlag(MODULE_ID, 'corruptions');
+    }
+    get transactions() {
+        return this.actor.getFlag(MODULE_ID, 'transactions');
     }
 
     incBalance(reason = "increment", amount = 1) {
@@ -265,4 +268,36 @@ Hooks.on("sw5e.useItem", async (item, html, data) => {
     if (item.type === 'power' && item.parent?.type === 'character') {
         actorFlags(item.parent).onCastPower(item);
     }
+});
+
+/**
+ * Checks if the current user has the Game Master role.
+ */
+function userIsGM() {
+    return game.users.get(game.userId).hasRole(foundry.CONST.USER_ROLES['GAMEMASTER']);
+}
+/**
+ * Conditional block helper: only display block if user has the GM role.
+ * TODO: make it configurable to allow non-GMs to see this stuff.
+ */
+Handlebars.registerHelper("ifGM", function(options) {
+    if (userIsGM()) {
+        return options.fn(this);
+    }
+});
+
+/**
+ * Handlebars helper to iterate over transactions,
+ * mapping array elements to object fields.
+ */
+Handlebars.registerHelper("eachTransaction", function(options) {
+    log('eachTransaction helper. this, options:', this, options);
+    return this.transactions.map(transaction => {
+        let [timestamp, delta, reason] = transaction;
+        return options.fn({
+            timestamp: new Date(timestamp).toISOString(),
+            delta: delta,
+            reason: reason
+        });
+    }).join("\n");
 });

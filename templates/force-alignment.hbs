@@ -2,7 +2,23 @@
 
 <div>
     <h3>Current Alignment</h3>
-    <div><button>+1 Light</button></div>
-    <div>{{balance}}</div>
-    <div><button>+1 Dark</button></div>
+    <p>....place image here...</p>
+    <p>for now, here's the numerical balance: {{balance}}</p>
+
+    {{#ifGM}}
+        <div id="sw5efa-gm-only">
+            <div><p>Current Force Alignment balance: {{balance}}</p></div>
+            <div><button id="sw5efa-light">Light</button></div>
+            <label>change amount: </label><input type="number" id="sw5efa-delta" max=200><br>
+            <label>reason:        </label><input type="text" id="sw5efa-reason"><br>
+            <div><button id="sw5efa-dark">Dark</button></div>
+            <br>
+            <table id="sw5efa-transaction-log">
+                <tr><th>TIMESTAMP</th><th>DELTA</th><th>REASON</th></tr>
+                {{#eachTransaction}}
+                <tr><td>{{timestamp}}</td><td>{{delta}}</td><td>{{reason}}</td></tr>
+                {{/eachTransaction}}
+            </table>
+        </div>
+    {{/ifGM}}
 </div>
