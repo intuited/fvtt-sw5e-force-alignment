@@ -29,6 +29,14 @@
   "esmodules": [
     "module/sw5e-force-alignment.js"
   ],
+  "packs": [
+    {
+      "name": "sw5efa-rolltables",
+      "label": "Force Alignment Rolltables",
+      "path": "./packs/rolltables.db",
+      "type": "Rolltable"
+    }
+  ],
   "styles": [
     "styles/sw5e-force-alignment.css"
   ],
