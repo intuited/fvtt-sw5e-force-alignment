@@ -92,11 +92,18 @@ class ForceAlignmentDialog extends DocumentSheet {
         callMap[side](reason, delta);
     }
 
+    onClickRollback(event) {
+        let timestamp = event.target.id.substring(7);
+        log('onClickRollback: this, event, timestamp', this, event, timestamp);
+        actorFlags(this.object).rollBackTransaction(timestamp);
+    }
+
     activateListeners(html) {
         log('ForceAlignmentDialog.activateListeners(html): this, html:', this, html);
         super.activateListeners(html);
         html.find("#sw5efa-light").click(partial(this.onClickButton, 'light').bind(this));
         html.find("#sw5efa-dark" ).click(partial(this.onClickButton, 'dark' ).bind(this));
+        html.find("#sw5efa-transaction-log .sw5efa-rollback-link").click(this.onClickRollback.bind(this));
     }
 
     /** @inheritdoc */
@@ -152,17 +159,23 @@ class FAFlags {
     get acknowledgedBalance() {
         return this.actor.getFlag(MODULE_ID, 'acknowledgedBalance');
     }
+    /**
+     * Returns a copy of the previouslyCast array flag for this actor.
+     */
     get previouslyCast() {
-        return this.actor.getFlag(MODULE_ID, 'previouslyCast');
+        return Array.from(this.actor.getFlag(MODULE_ID, 'previouslyCast'));
     }
     get benevolences() {
-        return this.actor.getFlag(MODULE_ID, 'benevolences');
+        return Array.from(this.actor.getFlag(MODULE_ID, 'benevolences'));
     }
     get corruptions() {
-        return this.actor.getFlag(MODULE_ID, 'corruptions');
+        return Array.from(this.actor.getFlag(MODULE_ID, 'corruptions'));
     }
+    /**
+     * Returns a shallow copy of this actor's transactions.
+     */
     get transactions() {
-        return this.actor.getFlag(MODULE_ID, 'transactions');
+        return Array.from(this.actor.getFlag(MODULE_ID, 'transactions'));
     }
 
     incBalance(reason = "increment", amount = 1) {
@@ -200,6 +213,58 @@ class FAFlags {
     }
 
     /**
+     * Undo changes made by a transaction and remove it from the log.
+     * If the transaction being rolled back was the first time a power was cast,
+     * that power is removed from the list of previously cast powers.
+     */
+    rollBackTransaction(timestamp) {
+        log('rollBackTransaction: this, timestamp', this, timestamp);
+        let transactions = this.transactions
+        let transaction = transactions.find(t => String(t[0]) === timestamp);
+        if (transaction === undefined) {
+            ui.notifications.warn(`Force Alignment: timestamp ${timestamp} not found in transaction log.`);
+            return false;
+        }
+        let [_, delta, reason] = transaction;
+        log('    timestamp, delta, reason', timestamp, delta, reason);
+
+        // If the transaction being rolled back was the first time a power was cast,
+        // we need to remove it from the list of cast powers.
+        let match = reason.match(/Cast (.*) for the first time/);
+        log('    match', match);
+        if (match) {
+            let powerName = match[1];
+            let pc = this.previouslyCast;
+            let powerIndex = pc.indexOf(powerName);
+            if (powerIndex === -1) {
+                ui.notifications.warn(`Force Alignment: Logged power "${powerName}" not found ` + 
+                                      `in previouslyCast flag for actor ${actor.name}.`
+                );
+            } else {
+                pc.splice(powerIndex, 1);
+                this.actor.setFlag(MODULE_ID, 'previouslyCast', pc);
+            }
+        }
+
+        /*
+         * TODO: Technically we should be retaining rolled back transactions
+         * and just adding another transaction to log the rollback,
+         * but this requires a bit more infrastructure to prevent transactions
+         * from being rolled back multiple times
+         * and will be more confusing, so we're just removing them for now.
+        /**
+        this.logTransaction(-delta, `Rollback of transaction with timestamp ${timestamp}`);
+        /*/
+        let spliced = transactions.findSplice(t => String(t[0]) === timestamp);
+        log('    spliced:', spliced);
+        this.actor.setFlag(MODULE_ID, 'transactions', transactions);
+        this.actor.setFlag(MODULE_ID, 'balance', this.balance - delta);
+        /**/
+
+        return true;
+    }
+
+    /**
      * Processes the transaction log and returns the calculated balance.
      * Also checks that transactions are in chronological order;
      * issues debug log message for discrepancies.
@@ -212,7 +277,7 @@ class FAFlags {
             if (timestamp < lastTimestamp) {
                 log(`timestamp in transaction [${timestamp}, ${delta}, ${reason}] predates previous timestamp.`);
             }
-            balance += delta;
+            balance += Number(delta);
         }
         return balance;
     }
@@ -316,9 +381,10 @@ Handlebars.registerHelper("ifGM", function(options) {
  */
 Handlebars.registerHelper("eachTransaction", function(options) {
     log('eachTransaction helper. this, options:', this, options);
-    return this.transactions.map(transaction => {
+    return this.transactions.reverse().map(transaction => {
         let [timestamp, delta, reason] = transaction;
         return options.fn({
+            rawTimestamp: timestamp,
             timestamp: new Date(timestamp).toISOString(),
             delta: delta,
             reason: reason
