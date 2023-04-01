@@ -159,7 +159,7 @@ class ModifyAlignmentDialog extends DocumentSheet {
         log('    rollbackLinks', rollbackLinks);
         //this doesn't work for some inexplicable reason so I'm just using the root jQuery instead
         //  html.find("#sw5efa-transaction-log .sw5efa-rollback-link").click(this.onClickRollback.bind(this));
-        $("#sw5efa-transaction-log .sw5efa-rollback-link").click(this.onClickRollback.bind(this));
+        $(`#ModifyAlignmentDialog-Actor-${this.object.id} #sw5efa-transaction-log .sw5efa-rollback-link`).click(this.onClickRollback.bind(this));
     }
 }
 
