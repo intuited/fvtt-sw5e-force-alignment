@@ -79,6 +79,58 @@ class ForceAlignmentDialog extends DocumentSheet {
         });
     }
 
+    onClickModifyButton(event) {
+        new ModifyAlignmentDialog(this.object).render(true);
+    }
+
+    /** @inheritdoc */
+    get title() {
+        return this.options.title || super.title;
+    }
+
+    /** @override */
+    getData() {
+        log('ForceAlignmentDialog.getData(), this', this);
+        return actorFlags(this.object);
+    }
+
+    activateListeners(html) {
+        log('ForceAlignmentDialog.activateListeners(html): this, html:', this, html);
+        super.activateListeners(html);
+        html.find("#sw5efa-gmbutton").click(this.onClickModifyButton.bind(this));
+    }
+}
+
+class ModifyAlignmentDialog extends DocumentSheet {
+    /** @inheritdoc */
+    static get defaultOptions() {
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            id: "modify-alignment",
+            classes: ["sw5e", "modify-alignment", "subconfig"],
+            title: "Modify Force Alignment",
+            template: `modules/${MODULE_ID}/templates/modify-force-alignment.hbs`,
+            width: 600,
+            height: "auto",
+            allowCustom: true,
+            minimum: 0,
+            maximum: null,
+            labelKey: null,
+            valueKey: "value",
+            customKey: "custom"
+        });
+    }
+
+    /** @inheritdoc */
+    get title() {
+        return this.options.title || super.title;
+    }
+
+    /** @override */
+    getData() {
+        log('ModifyAlignmentDialog.getData(), this', this);
+        return actorFlags(this.object);
+    }
+
     onClickButton(side, event) {
         log('onClickButton: this, side, event:', this, side, event)
         let delta = this.element.find('#sw5efa-delta')[0].value;
@@ -99,24 +151,16 @@ class ForceAlignmentDialog extends DocumentSheet {
     }
 
     activateListeners(html) {
-        log('ForceAlignmentDialog.activateListeners(html): this, html:', this, html);
+        log('ModifyAlignmentDialog.activateListeners(html): this, html:', this, html);
         super.activateListeners(html);
         html.find("#sw5efa-light").click(partial(this.onClickButton, 'light').bind(this));
         html.find("#sw5efa-dark" ).click(partial(this.onClickButton, 'dark' ).bind(this));
-        html.find("#sw5efa-transaction-log .sw5efa-rollback-link").click(this.onClickRollback.bind(this));
+        let rollbackLinks = html.find("#sw5efa-transaction-log .sw5efa-rollback-link");
+        log('    rollbackLinks', rollbackLinks);
+        //this doesn't work for some inexplicable reason so I'm just using the root jQuery instead
+        //  html.find("#sw5efa-transaction-log .sw5efa-rollback-link").click(this.onClickRollback.bind(this));
+        $("#sw5efa-transaction-log .sw5efa-rollback-link").click(this.onClickRollback.bind(this));
     }
-
-    /** @inheritdoc */
-    get title() {
-        return this.options.title || super.title;
-    }
-
-    /** @override */
-    getData() {
-        log('ForceAlignmentDialog.getData(), this', this);
-        return actorFlags(this.object);
-    }
-
 }
 
 /**
