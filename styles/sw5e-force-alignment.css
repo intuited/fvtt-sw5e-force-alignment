@@ -1,0 +1,23 @@
+.sw5efa-feature {
+    height: 30px;
+}
+
+.sw5efa-facols {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#sw5efa-light-dark-spectrum {
+    position: relative;
+}
+#sw5efa-vertbar {
+    border: 0px;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+#sw5efa-ticker {
+    border: 0px;
+    position: absolute;
+    left: 0px;
+}

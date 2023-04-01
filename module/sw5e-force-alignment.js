@@ -1,5 +1,6 @@
 const MODULE_ID = 'sw5e-force-alignment';
 const MODULE_ABBREV = 'SW5EFA';
+const MODULE_PATH = 'modules/'.concat(MODULE_ID);
 
 Hooks.once('devModeReady', ({ registerPackageDebugFlag }) => {
     registerPackageDebugFlag(MODULE_ID);
@@ -434,4 +435,16 @@ Handlebars.registerHelper("eachTransaction", function(options) {
             reason: reason
         });
     }).join("\n");
+});
+
+Handlebars.registerHelper("imgPath", function(options) {
+    return MODULE_PATH.concat('/assets');
+});
+Handlebars.registerHelper("tickerOffset", function(options) {
+    // 10x thresholds each for light and dark;
+    // thresholds every 30px
+    log('tickerOffset handler: this, options', this, options);
+    let ret = ((100 - Number(this.balance)) / 10 * 30).toNearest(1) + 5;
+    log('    ret', ret);
+    return ret;
 });
